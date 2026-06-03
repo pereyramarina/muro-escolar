@@ -10,9 +10,13 @@ export class MsObrasService {
     private obraRepository: Repository<Obra>,
   ) {}
 
-  // Este es el método que TypeScript no estaba encontrando
   async crearObra(datosObra: any) {
     const nuevaObra = this.obraRepository.create(datosObra);
     return await this.obraRepository.save(nuevaObra);
+  }
+
+  // MÉTODO NUEVO: Ejecuta un SELECT en la base de datos
+  async obtenerObras() {
+    return await this.obraRepository.find();
   }
 }

@@ -10,9 +10,14 @@ export class AppController {
     return this.clientObras.send('get_obras_test', { mensaje: 'Hola!' });
   }
 
-  // NUEVA RUTA: Esta es la que Postman está buscando
   @Post('obras')
   crearNuevaObra(@Body() body: any) {
     return this.clientObras.send('crear_obra', body);
+  }
+
+  // RUTA NUEVA: Endpoint GET para listar los registros
+  @Get('obras')
+  obtenerTodasLasObras() {
+    return this.clientObras.send('obtener_obras', {});
   }
 }
