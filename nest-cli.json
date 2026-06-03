@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json.schemastore.org/nest-cli",
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps/muro-escolar/src",
+  "compilerOptions": {
+    "deleteOutDir": true,
+    "webpack": true,
+    "tsConfigPath": "apps/muro-escolar/tsconfig.app.json"
+  },
+  "monorepo": true,
+  "root": "apps/muro-escolar",
+  "projects": {
+    "ms-feedback": {
+      "type": "application",
+      "root": "apps/ms-feedback",
+      "entryFile": "main",
+      "sourceRoot": "apps/ms-feedback/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/ms-feedback/tsconfig.app.json"
+      }
+    },
+    "ms-obras": {
+      "type": "application",
+      "root": "apps/ms-obras",
+      "entryFile": "main",
+      "sourceRoot": "apps/ms-obras/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/ms-obras/tsconfig.app.json"
+      }
+    },
+    "ms-reportes": {
+      "type": "application",
+      "root": "apps/ms-reportes",
+      "entryFile": "main",
+      "sourceRoot": "apps/ms-reportes/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/ms-reportes/tsconfig.app.json"
+      }
+    },
+    "muro-escolar": {
+      "type": "application",
+      "root": "apps/muro-escolar",
+      "entryFile": "main",
+      "sourceRoot": "apps/muro-escolar/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/muro-escolar/tsconfig.app.json"
+      }
+    }
+  }
+}
