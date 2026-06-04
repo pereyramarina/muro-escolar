@@ -15,7 +15,7 @@ export class MsObrasService {
     return await this.obraRepository.save(nuevaObra);
   }
 
-  // MÉTODO NUEVO: Ejecuta un SELECT en la base de datos
+  // Ejecuta un SELECT en la base de datos
   async obtenerObras() {
     return await this.obraRepository.find();
   }

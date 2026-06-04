@@ -5,11 +5,12 @@ import { ClientProxy } from '@nestjs/microservices';
 export class AppController {
   constructor(
     @Inject('OBRAS_SERVICE') private clientObras: ClientProxy,
-    // NUEVO: Agregamos la inyección del cliente de Feedback
     @Inject('FEEDBACK_SERVICE') private clientFeedback: ClientProxy,
+    // NUEVO: Agregamos la inyección del cliente de Reportes
+    @Inject('REPORTES_SERVICE') private clientReportes: ClientProxy,
   ) {}
 
-  // --- RUTAS DE OBRAS ---
+  // --- RUTA DE OBRAS ---
   @Get('ping-obras')
   pingMicroservicioObras() {
     return this.clientObras.send('get_obras_test', { mensaje: 'Hola!' });
@@ -25,7 +26,7 @@ export class AppController {
     return this.clientObras.send('obtener_obras', {});
   }
 
-  // --- NUEVAS RUTAS DE FEEDBACK ---
+  // --- RUTA DE FEEDBACK ---
   @Post('feedback')
   crearNuevoFeedback(@Body() body: any) {
     return this.clientFeedback.send('crear_feedback', body);
@@ -34,5 +35,11 @@ export class AppController {
   @Get('feedback')
   obtenerTodosLosFeedbacks() {
     return this.clientFeedback.send('obtener_feedbacks', {});
+  }
+
+  // --- RUTA DE REPORTES ---
+  @Get('reportes')
+  obtenerReporteEstadistico() {
+    return this.clientReportes.send('obtener_reporte_general', {});
   }
 }

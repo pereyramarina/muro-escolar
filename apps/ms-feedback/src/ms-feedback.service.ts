@@ -16,7 +16,7 @@ export class MsFeedbackService {
     return await nuevoFeedback.save();
   }
 
-  // Método para leer los documentos (ya lo dejamos listo)
+  // Método para leer los documentos
   async obtenerFeedbacks() {
     return await this.feedbackModel.find().exec();
   }

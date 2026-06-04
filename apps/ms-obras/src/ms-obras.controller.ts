@@ -17,7 +17,7 @@ export class MsObrasController {
     return { status: 'Éxito', obra: obraGuardada };
   }
 
-  // MÉTODO NUEVO: Intercepta la petición y llama al servicio
+  // Intercepta la petición y llama al servicio
   @MessagePattern('obtener_obras')
   async handleObtenerObras() {
     console.log('Consultando todas las obras en BD...');
