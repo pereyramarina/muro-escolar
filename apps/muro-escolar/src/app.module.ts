@@ -1,14 +1,19 @@
 import { Module } from '@nestjs/common';
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
-    // Aquí registramos el "directorio telefónico" de nuestros microservicios.
+    // Configuración de Rate Limiting: Máximo 10 peticiones cada (1 minuto) por IP
+    ThrottlerModule.forRoot([{
+      ttl: 60000,
+      limit: 10,
+    }]),
     ClientsModule.register([
       {
-        name: 'OBRAS_SERVICE', // Un nombre clave para inyectarlo.
+        name: 'OBRAS_SERVICE',
         transport: Transport.TCP,
         options: { host: '127.0.0.1', port: 3001 },
       },
@@ -25,6 +30,12 @@ import { ClientsModule, Transport } from '@nestjs/microservices';
     ]),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    {
+      // Aplica la protección DDoS de forma global a todas las rutas del Gateway
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AppModule {}
