@@ -1,40 +1,74 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_FILTER } from '@nestjs/core'; 
 import { AppController } from './app.controller';
+import { AllExceptionsFilter } from './http-exception.filter'; 
 
 @Module({
   imports: [
-    // Configuración de Rate Limiting: Máximo 10 peticiones cada (1 minuto) por IP
+    // Carga global de las variables de entorno
+    ConfigModule.forRoot({
+      isGlobal: true, 
+    }),
+
+    // Seguridad anti-DDoS (Rate Limiting)
     ThrottlerModule.forRoot([{
       ttl: 60000,
       limit: 10,
     }]),
-    ClientsModule.register([
+
+    // microservicios usando las variables dinámicas
+    ClientsModule.registerAsync([
       {
         name: 'OBRAS_SERVICE',
-        transport: Transport.TCP,
-        options: { host: '127.0.0.1', port: 3001 },
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.TCP,
+          options: {
+            host: configService.get<string>('OBRAS_HOST'),
+            port: configService.get<number>('OBRAS_PORT'),
+          },
+        }),
       },
       {
         name: 'FEEDBACK_SERVICE',
-        transport: Transport.TCP,
-        options: { host: '127.0.0.1', port: 3002 },
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.TCP,
+          options: {
+            host: configService.get<string>('FEEDBACK_HOST'),
+            port: configService.get<number>('FEEDBACK_PORT'),
+          },
+        }),
       },
       {
         name: 'REPORTES_SERVICE',
-        transport: Transport.TCP,
-        options: { host: '127.0.0.1', port: 3003 },
+        imports: [ConfigModule],
+        inject: [ConfigService],
+        useFactory: (configService: ConfigService) => ({
+          transport: Transport.TCP,
+          options: {
+            host: configService.get<string>('REPORTES_HOST'),
+            port: configService.get<number>('REPORTES_PORT'),
+          },
+        }),
       },
     ]),
   ],
   controllers: [AppController],
   providers: [
     {
-      // Aplica la protección DDoS de forma global a todas las rutas del Gateway
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+    // Se activó el filtro global para atrapar caídas del servidor
+    {
+      provide: APP_FILTER,
+      useClass: AllExceptionsFilter,
     },
   ],
 })
