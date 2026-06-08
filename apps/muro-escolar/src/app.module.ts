@@ -5,6 +5,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD, APP_FILTER } from '@nestjs/core'; 
 import { AppController } from './app.controller';
 import { AllExceptionsFilter } from './http-exception.filter'; 
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -58,6 +59,8 @@ import { AllExceptionsFilter } from './http-exception.filter';
         }),
       },
     ]),
+
+    AuthModule, // 2. CONECTAMOS EL MÓDULO AL SISTEMA PRINCIPAL
   ],
   controllers: [AppController],
   providers: [
