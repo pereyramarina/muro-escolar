@@ -24,10 +24,10 @@ export class AppController {
   @Get('obras')
   obtenerTodasLasObras(
     @Query('page') page?: number,   
-    @Query('limit') limit?: number  
+    @Query('limit') limit?: number, 
+    @Query('search') search?: string
   ) {
-    // Transmitimos el payload de paginación por TCP
-    return this.clientObras.send('obtener_obras', { page, limit });
+    return this.clientObras.send('obtener_obras', { page, limit, search });
   }
 
   // --- RUTA DE FEEDBACK ---
