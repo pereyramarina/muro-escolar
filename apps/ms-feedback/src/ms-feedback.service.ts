@@ -6,13 +6,17 @@ import { Feedback } from './feedback.schema';
 @Injectable()
 export class MsFeedbackService {
   constructor(
-    // Inyectamos el modelo de Mongoose
     @InjectModel(Feedback.name) private feedbackModel: Model<Feedback>,
   ) {}
 
-  // Método para guardar un nuevo documento en MongoDB
   async crearFeedback(datosFeedback: any) {
-    const nuevoFeedback = new this.feedbackModel(datosFeedback);
+    const nuevoFeedback = new this.feedbackModel({
+      id_obra: Number(datosFeedback.id_obra),
+      id_docente: datosFeedback.id_docente,
+      calificacion: Number(datosFeedback.calificacion),
+      comentario_pedagogico: datosFeedback.comentario 
+    });
+    
     return await nuevoFeedback.save();
   }
 
