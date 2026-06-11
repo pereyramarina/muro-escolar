@@ -15,8 +15,26 @@ export class MsObrasService {
     return await this.obraRepository.save(nuevaObra);
   }
 
-  // Ejecuta un SELECT en la base de datos
-  async obtenerObras() {
-    return await this.obraRepository.find();
+  /**
+   * Ejecuta un SELECT paginado en la base de datos usando Skip y Take
+   */
+  async obtenerObras(page: number, limit: number) {
+    const skip = (page - 1) * limit;
+
+    const [obras, total] = await this.obraRepository.findAndCount({
+      skip: skip,      
+      take: limit,     
+      order: {
+        id_obra: 'DESC'
+      }
+    });
+
+    const paginasTotales = Math.ceil(total / limit);
+
+    return {
+      obras,
+      total,
+      paginasTotales,
+    };
   }
 }

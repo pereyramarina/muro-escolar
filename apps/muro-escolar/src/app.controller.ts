@@ -1,12 +1,12 @@
-import { Controller, Get, Post, Body, Inject } from '@nestjs/common';
+import { Controller, Get, Post, Body, Inject, Query } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
+import { CrearObraDto } from '../../ms-obras/src/dto/crear-obra.dto'; 
 
 @Controller()
 export class AppController {
   constructor(
     @Inject('OBRAS_SERVICE') private clientObras: ClientProxy,
     @Inject('FEEDBACK_SERVICE') private clientFeedback: ClientProxy,
-    // NUEVO: Agregamos la inyección del cliente de Reportes
     @Inject('REPORTES_SERVICE') private clientReportes: ClientProxy,
   ) {}
 
@@ -17,13 +17,17 @@ export class AppController {
   }
 
   @Post('obras')
-  crearNuevaObra(@Body() body: any) {
+  crearNuevaObra(@Body() body: CrearObraDto) {
     return this.clientObras.send('crear_obra', body);
   }
 
   @Get('obras')
-  obtenerTodasLasObras() {
-    return this.clientObras.send('obtener_obras', {});
+  obtenerTodasLasObras(
+    @Query('page') page?: number,   
+    @Query('limit') limit?: number  
+  ) {
+    // Transmitimos el payload de paginación por TCP
+    return this.clientObras.send('obtener_obras', { page, limit });
   }
 
   // --- RUTA DE FEEDBACK ---
