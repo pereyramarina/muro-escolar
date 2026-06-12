@@ -1,40 +1,43 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, ConflictException, InternalServerErrorException, BadRequestException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { CrearUsuarioDto } from './dto/crear-usuario.dto';
 import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-  constructor(private jwtService: JwtService) {}
+  private usuariosSimulados: any[] = [
+    { email: 'alumno@gmail.com', passwordHash: '', role: 'alumno', nombre: 'Mercedes', apellido: 'Marina' },
+    { email: 'docente@gmail.com', passwordHash: '', role: 'docente', nombre: 'Carlos', apellido: 'Pereyra' },
+    { email: 'directivo@gmail.com', passwordHash: '', role: 'directivo', nombre: 'Dirección', apellido: 'General' }
+  ];
+
+  constructor(private jwtService: JwtService) {
+    this.precargarHashes();
+  }
+
+  private async precargarHashes() {
+    try {
+      this.usuariosSimulados[0].passwordHash = await bcrypt.hash('12345678', 10);
+      this.usuariosSimulados[1].passwordHash = await bcrypt.hash('87654321', 10);
+      this.usuariosSimulados[2].passwordHash = await bcrypt.hash('11223344', 10);
+    } catch (e) {
+      console.error('Error inicializando hashes:', e);
+    }
+  }
 
   async validarUsuarioYGenerarToken(email: string, dniIngresado: string) {
-    // Simulación del usuario que luego conectaremos a tu esquema Alumno en MongoDB
-    const usuarioEncontrado = {
-      email: email,
-      passwordHash: await bcrypt.hash(dniIngresado, 10), 
-      role: 'user', 
-      nombre: 'Usuario',
-      apellido: 'Prueba'
-    };
+    const usuarioEncontrado = this.usuariosSimulados.find(u => u.email === email);
+    if (!usuarioEncontrado) throw new UnauthorizedException('El correo electrónico no está registrado.');
 
-    if (!usuarioEncontrado) {
-      throw new UnauthorizedException('El correo no está registrado.');
-    }
-
-    // 1. Verificamos que el DNI ingresado coincida con el encriptado
     const contrasenaValida = await bcrypt.compare(dniIngresado, usuarioEncontrado.passwordHash);
+    if (!contrasenaValida) throw new UnauthorizedException('DNI incorrecto.');
 
-    if (!contrasenaValida) {
-      throw new UnauthorizedException('DNI incorrecto.');
-    }
-
-    // 2. Creamos el "Pase de Visitante" (El payload del JWT)
     const payload = { 
       email: usuarioEncontrado.email, 
       role: usuarioEncontrado.role,
       nombre: usuarioEncontrado.nombre
     };
 
-    // 3. Devolvemos el Token firmado al Frontend
     return {
       access_token: this.jwtService.sign(payload),
       perfil: {
@@ -43,5 +46,46 @@ export class AuthService {
         role: usuarioEncontrado.role
       }
     };
+  }
+
+  async registrarUsuario(dto: CrearUsuarioDto) {
+    console.log('--- BACKEND RECIBIENDO REGISTRO ---', JSON.stringify(dto));
+
+    try {
+      if (!dto.email || !dto.dni) {
+        throw new BadRequestException('Datos insuficientes.');
+      }
+
+      const existe = this.usuariosSimulados.find(u => u.email === dto.email);
+      if (existe) throw new ConflictException('El correo ya está registrado.');
+
+      const passwordHash = await bcrypt.hash(dto.dni, 10);
+      const nuevoUsuario = {
+        email: dto.email,
+        passwordHash: passwordHash,
+        role: dto.role,
+        nombre: dto.nombre,
+        apellido: dto.apellido
+      };
+
+      this.usuariosSimulados.push(nuevoUsuario);
+      console.log('--- USUARIO REGISTRADO EXITOSAMENTE ---');
+      
+      return { 
+        mensaje: 'Usuario registrado con éxito.', 
+        usuario: { 
+          email: nuevoUsuario.email, 
+          role: nuevoUsuario.role, 
+          nombre: nuevoUsuario.nombre, 
+          apellido: nuevoUsuario.apellido 
+        } 
+      };
+    } catch (error: any) {
+      console.error('--- ERROR CRÍTICO EN REGISTRO ---', error);
+      if (error instanceof ConflictException || error instanceof BadRequestException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Error interno: ' + (error?.message || 'Desconocido'));
+    }
   }
 }

@@ -3,17 +3,19 @@ import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
+import { JwtStrategy } from './jwt.strategy';
+import { RolesGuard } from './roles.guard';
 
 @Module({
   imports: [
     PassportModule,
     JwtModule.register({
       secret: 'CLAVE_SECRETA_SUPER_SEGURA_MURO_ESCOLAR',
-      signOptions: { expiresIn: '8h' }, 
+      signOptions: { expiresIn: '8h' },
     }),
   ],
-  controllers: [AuthController], // Agregamos el controlador aquí
-  providers: [AuthService],      // Agregamos el servicio aquí
+  controllers: [AuthController],
+  providers: [AuthService, JwtStrategy, RolesGuard], // ✅ agregados
   exports: [JwtModule, AuthService],
 })
 export class AuthModule {}

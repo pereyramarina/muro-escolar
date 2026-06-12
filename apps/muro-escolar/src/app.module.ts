@@ -9,18 +9,13 @@ import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
-    // Carga global de las variables de entorno
-    ConfigModule.forRoot({
-      isGlobal: true, 
-    }),
+    ConfigModule.forRoot({ isGlobal: true }),
 
-    // Seguridad anti-DDoS (Rate Limiting)
     ThrottlerModule.forRoot([{
       ttl: 60000,
       limit: 10,
     }]),
 
-    // microservicios usando las variables dinámicas
     ClientsModule.registerAsync([
       {
         name: 'OBRAS_SERVICE',
@@ -29,8 +24,8 @@ import { AuthModule } from './auth/auth.module';
         useFactory: (configService: ConfigService) => ({
           transport: Transport.TCP,
           options: {
-            host: configService.get<string>('OBRAS_HOST'),
-            port: configService.get<number>('OBRAS_PORT'),
+            host: configService.get<string>('OBRAS_HOST') || '127.0.0.1',
+            port: configService.get<number>('OBRAS_PORT') || 3001,
           },
         }),
       },
@@ -41,8 +36,8 @@ import { AuthModule } from './auth/auth.module';
         useFactory: (configService: ConfigService) => ({
           transport: Transport.TCP,
           options: {
-            host: configService.get<string>('FEEDBACK_HOST'),
-            port: configService.get<number>('FEEDBACK_PORT'),
+            host: configService.get<string>('FEEDBACK_HOST') || '127.0.0.1',
+            port: configService.get<number>('FEEDBACK_PORT') || 3002,
           },
         }),
       },
@@ -50,29 +45,26 @@ import { AuthModule } from './auth/auth.module';
         name: 'REPORTES_SERVICE',
         imports: [ConfigModule],
         inject: [ConfigService],
-        useFactory: (configService: ConfigService) => ({
-          transport: Transport.TCP,
-          options: {
-            host: configService.get<string>('REPORTES_HOST'),
-            port: configService.get<number>('REPORTES_PORT'),
-          },
-        }),
+        useFactory: (configService: ConfigService) => {
+          const host = configService.get<string>('REPORTES_HOST');
+          const port = configService.get<number>('REPORTES_PORT');
+          
+          // Si no hay configuración válida, devolvemos un puerto ficticio para evitar error 500
+          if (!host || !port) {
+            console.warn('⚠️ Microservicio Reportes no detectado, modo seguro activo.');
+            return { transport: Transport.TCP, options: { host: '127.0.0.1', port: 9999 } };
+          }
+          return { transport: Transport.TCP, options: { host, port } };
+        },
       },
     ]),
 
-    AuthModule, // 2. CONECTAMOS EL MÓDULO AL SISTEMA PRINCIPAL
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [
-    {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
-    },
-    // Se activó el filtro global para atrapar caídas del servidor
-    {
-      provide: APP_FILTER,
-      useClass: AllExceptionsFilter,
-    },
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_FILTER, useClass: AllExceptionsFilter },
   ],
 })
 export class AppModule {}
