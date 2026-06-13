@@ -6,10 +6,17 @@ import { APP_GUARD, APP_FILTER } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AllExceptionsFilter } from './http-exception.filter'; 
 import { AuthModule } from './auth/auth.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+import { join } from 'path';
 
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
+
+    ServeStaticModule.forRoot({
+      rootPath: join(process.cwd(), 'uploads'),
+      serveRoot: '/uploads',
+    }),
 
     ThrottlerModule.forRoot([{
       ttl: 60000,
@@ -49,7 +56,6 @@ import { AuthModule } from './auth/auth.module';
           const host = configService.get<string>('REPORTES_HOST');
           const port = configService.get<number>('REPORTES_PORT');
           
-          // Si no hay configuración válida, devolvemos un puerto ficticio para evitar error 500
           if (!host || !port) {
             console.warn('⚠️ Microservicio Reportes no detectado, modo seguro activo.');
             return { transport: Transport.TCP, options: { host: '127.0.0.1', port: 9999 } };

@@ -5,10 +5,11 @@ import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
+  // 1. Agregamos un 'id' único a cada usuario simulado
   private usuariosSimulados: any[] = [
-    { email: 'alumno@gmail.com', passwordHash: '', role: 'alumno', nombre: 'Mercedes', apellido: 'Marina' },
-    { email: 'docente@gmail.com', passwordHash: '', role: 'docente', nombre: 'Carlos', apellido: 'Pereyra' },
-    { email: 'directivo@gmail.com', passwordHash: '', role: 'directivo', nombre: 'Dirección', apellido: 'General' }
+    { id: 1, email: 'alumno@gmail.com', passwordHash: '', role: 'alumno', nombre: 'Mercedes', apellido: 'Marina' },
+    { id: 2, email: 'docente@gmail.com', passwordHash: '', role: 'docente', nombre: 'Carlos', apellido: 'Pereyra' },
+    { id: 3, email: 'directivo@gmail.com', passwordHash: '', role: 'directivo', nombre: 'Dirección', apellido: 'General' }
   ];
 
   constructor(private jwtService: JwtService) {
@@ -32,7 +33,9 @@ export class AuthService {
     const contrasenaValida = await bcrypt.compare(dniIngresado, usuarioEncontrado.passwordHash);
     if (!contrasenaValida) throw new UnauthorizedException('DNI incorrecto.');
 
+    // 2. Agregamos el ID al payload usando la convención 'sub' (Subject)
     const payload = { 
+      sub: usuarioEncontrado.id, 
       email: usuarioEncontrado.email, 
       role: usuarioEncontrado.role,
       nombre: usuarioEncontrado.nombre
@@ -41,6 +44,7 @@ export class AuthService {
     return {
       access_token: this.jwtService.sign(payload),
       perfil: {
+        id: usuarioEncontrado.id, // También lo devolvemos en el perfil por comodidad
         nombre: usuarioEncontrado.nombre,
         apellido: usuarioEncontrado.apellido,
         role: usuarioEncontrado.role
@@ -60,7 +64,14 @@ export class AuthService {
       if (existe) throw new ConflictException('El correo ya está registrado.');
 
       const passwordHash = await bcrypt.hash(dto.dni, 10);
+      
+      // 3. Simulamos la creación de un ID autoincremental (como lo haría una BD real)
+      const nuevoId = this.usuariosSimulados.length > 0 
+        ? Math.max(...this.usuariosSimulados.map(u => u.id)) + 1 
+        : 1;
+
       const nuevoUsuario = {
+        id: nuevoId,
         email: dto.email,
         passwordHash: passwordHash,
         role: dto.role,
@@ -74,6 +85,7 @@ export class AuthService {
       return { 
         mensaje: 'Usuario registrado con éxito.', 
         usuario: { 
+          id: nuevoUsuario.id,
           email: nuevoUsuario.email, 
           role: nuevoUsuario.role, 
           nombre: nuevoUsuario.nombre, 
