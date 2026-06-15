@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Inject, Query, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Delete, Param, Body, Inject, Query, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -35,10 +35,8 @@ export class AppController {
   ) {
     if (!file) throw new BadRequestException('La imagen es obligatoria');
 
-    // Generamos la URL local para la imagen subida
     const urlGenerada = `http://localhost:3000/uploads/${file.filename}`;
 
-    // Construimos el DTO exacto que espera el microservicio
     const payload = {
       titulo: body.titulo,
       descripcion: body.descripcion,
@@ -56,6 +54,11 @@ export class AppController {
     @Query('search') search?: string
   ) {
     return this.clientObras.send('obtener_obras', { page, limit, search });
+  }
+
+  @Delete('obras/:id')
+  eliminarObra(@Param('id') id: string) {
+    return this.clientObras.send('eliminar_obra', { id: Number(id) });
   }
 
   // --- RUTA DE FEEDBACK ---

@@ -18,17 +18,15 @@ export class MsObrasController {
     return { status: 'Éxito', obra: obraGuardada };
   }
 
-  // Intercepta la petición y ahora también captura el parámetro de búsqueda
   @MessagePattern('obtener_obras')
   async handleObtenerObras(@Payload() data: { page?: number; limit?: number; search?: string }) {
     
     const page = data?.page ? Number(data.page) : 1;
     const limit = data?.limit ? Number(data.limit) : 10;
-    const searchTerm = data?.search || ''; // Capturamos la palabra clave o enviamos un string vacío
+    const searchTerm = data?.search || ''; 
     
     console.log(`Consultando obras en BD - Página: ${page}, Límite: ${limit}, Filtro: "${searchTerm}"`);
     
-    // Solicitamos al servicio la información fragmentada y filtrada
     const resultado = await this.msObrasService.obtenerObras(page, limit, searchTerm);
     
     return { 
@@ -38,5 +36,11 @@ export class MsObrasController {
       paginaActual: page,
       datos: resultado.obras 
     };
+  }
+
+  @MessagePattern('eliminar_obra')
+  async handleEliminarObra(@Payload() data: { id: number }) {
+    const resultado = await this.msObrasService.eliminarObra(data.id);
+    return { status: 'Éxito', mensaje: 'Registro de obra eliminado exitosamente.', resultado };
   }
 }

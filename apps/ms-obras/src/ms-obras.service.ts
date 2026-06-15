@@ -25,11 +25,9 @@ export class MsObrasService {
 
   async obtenerObras(page: number, limit: number, searchTerm: string = '') {
     const skip = (page - 1) * limit;
-
     const whereClause: any[] = [];
 
     if (searchTerm) {
-      // Buscamos coincidencias de texto en 'titulo' y 'tecnica'
       whereClause.push({ titulo: Like(`%${searchTerm}%`) });
       whereClause.push({ tecnica: Like(`%${searchTerm}%`) });
 
@@ -49,7 +47,6 @@ export class MsObrasService {
       }
     });
 
-    
     const obrasFrontend = obrasBd.map(obra => ({
       id_obra: obra.id_obra,
       titulo: obra.titulo,
@@ -66,5 +63,9 @@ export class MsObrasService {
       total,
       paginasTotales,
     };
+  }
+
+  async eliminarObra(id: number) {
+    return await this.obraRepository.delete({ id_obra: id });
   }
 }
