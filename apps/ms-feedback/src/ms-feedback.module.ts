@@ -6,7 +6,6 @@ import { Feedback, FeedbackSchema } from './feedback.schema';
 
 @Module({
   imports: [
-    // Conexión actualizada con tus credenciales de Docker
     MongooseModule.forRoot('mongodb://root:password123@localhost:27017/muro_escolar?authSource=admin'),
     
     MongooseModule.forFeature([

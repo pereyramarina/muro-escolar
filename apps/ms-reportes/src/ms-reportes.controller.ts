@@ -12,7 +12,6 @@ export class MsReportesController {
     
     const estadisticas = await this.msReportesService.generarEstadisticasGenerales();
     
-    // --- LÍNEA DE DIAGNÓSTICO AÑADIDA ---
     console.log('--- ESTRUCTURA DE DATOS PARA EL DASHBOARD ---');
     console.log(JSON.stringify(estadisticas, null, 2));
     // ------------------------------------

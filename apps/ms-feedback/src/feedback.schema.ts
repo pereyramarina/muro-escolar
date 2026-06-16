@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 
-@Schema({ timestamps: true }) // Crea campos automáticos de createdAt y updatedAt
+@Schema({ timestamps: true })
 export class Feedback extends Document {
   @Prop({ required: true })
   id_obra!: number;

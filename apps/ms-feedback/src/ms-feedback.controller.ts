@@ -7,7 +7,6 @@ import { CrearFeedbackDto } from './dto/crear-feedback.dto';
 export class MsFeedbackController {
   constructor(private readonly msFeedbackService: MsFeedbackService) {}
 
-  // Interceptor para guardar datos
   @MessagePattern('crear_feedback')
   async handleCrearFeedback(@Payload() data: CrearFeedbackDto) {
     console.log('Guardando feedback en la base de datos relacional...', data);
@@ -15,7 +14,6 @@ export class MsFeedbackController {
     return { status: 'Éxito', feedback: feedbackGuardado };
   }
 
-  // Interceptor para leer datos
   @MessagePattern('obtener_feedbacks')
   async handleObtenerFeedbacks() {
     console.log('Consultando el historial de feedbacks en BD...');
